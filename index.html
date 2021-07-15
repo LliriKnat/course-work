@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>PKO</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container px-5">
+                <a class="navbar-brand" href="index.html">Добро пожаловать!</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <!-- <li class="nav-item"><a class="nav-link active" aria-current="page" href="index.html">Главная</a></li> -->
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page Content-->
+        <div class="container px-4 px-lg-5">
+            <!-- Heading Row-->
+            <div class="row gx-4 gx-lg-5 align-items-center my-5" align="center">
+                <div class="col-lg-7">
+                    <h1 class="font-weight-light">Инструкция</h1>
+                    <a href="https://drive.google.com/file/d/1WsV0LixqLcPQ1bVeJix5SuNKWxGLye27/view" target="_blank">
+                    <img class="img-fluid rounded mb-4 mb-lg-0" src="assets/1.png" alt="..." border="1pt" />
+                    </a>
+                    <p>Перед началом работы с программой, рекомендуем ознакомиться с инструкцией.</p>
+                    
+                </div>
+                <div class="col-lg-5">
+                    <h1 class="font-weight-light">Авторизация</h1>
+                    <p>Для авторизации на google drive нажмите на кнопку снизу.</p>
+                    <button class="btn btn-success" id="authorize_button" style="display: none;">Authorize</button>
+                    <button class="btn btn-danger" id="signout_button" style="display: none;">Sign Out</button>
+                </div>
+            </div>
+            
+            <!-- Content Row-->
+            <div class="row gx-4 gx-lg-5">
+                <div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title">Шаг 1</h2>
+                            <p class="card-text">Выбор таблицы со студентами.</p>
+                        </div>
+                        <div align="center" class="card-footer"><span id="studentsFolder"></span><button class="btn btn-primary btn-sm" id="selectStudentGroups">Выбрать папку с группами</button></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title">Шаг 2</h2>
+                            <p class="card-text">Выбор папки с посещениями лекций.</p>
+                        </div>
+                        <div align="center" class="card-footer"><span id="registrationsFile"></span><button class="btn btn-primary btn-sm" id="selectRegistrations">Выбрать папку с посещениями</button></div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-5">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h2 class="card-title">Шаг 3</h2>
+                            <p class="card-text">Выбор папки с результатами блиц-опросов.</p>
+                        </div>
+                        <div align="center" class="card-footer"><span id="polls_file"></span><button class="btn btn-primary btn-sm" id="select_polls">Выбрать папку с опросами</button></div>
+                    </div>
+                </div>
+            </div>
+
+          
+            <div align="center" class="card-body">
+                <h2 class="card-title">Запуск программы</h2>
+                <button class="btn btn-warning" id="update_students">Update</button>
+                <span id="update_status"></span>
+            </div>
+
+            <!-- Call to Action-->
+            
+            <div class="card text-white bg-secondary my-5 py-4 text-center">
+                <pre id="content" style="white-space: pre-wrap;">
+                    <ul id="error_list">Для работы программы необходимо выбрать таблицу со студентами(шаг 1), а также хотя бы одну папку с данными (шаг 2, 3).</ul>
+                </pre>
+            </div>
+        </div>
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container px-4 px-lg-5"><p class="m-0 text-center text-white">Copyright &copy; PKO 2021</p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+
+        <!-- day.js -->
+        <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+        <script src="https://unpkg.com/dayjs@1.8.21/plugin/customParseFormat.js"></script>
+
+        <!-- Script part -->
+    <script type="text/javascript">
+      // day.js setup plugin
+      dayjs.extend(window.dayjs_plugin_customParseFormat);
+      // Client ID and API key from the Developer Console
+      var CLIENT_ID = '314388582026-qnra5nbb8f3qc775vl1n3rrr36kikcnf.apps.googleusercontent.com';
+      var API_KEY = 'AIzaSyAYSF30CBljgxxcnkHcPEytfGTlQ8pbons';
+
+      // Array of API discovery doc URLs for APIs used by the quickstart
+      var DISCOVERY_DOCS = [
+        "https://sheets.googleapis.com/$discovery/rest?version=v4",
+        "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+      ];
+
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      var SCOPES = 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive';
+
+      var authorizeButton = document.getElementById('authorize_button');
+      var signoutButton = document.getElementById('signout_button');
+      var selectStudentGroupsButton = document.getElementById('selectStudentGroups');
+      var selectRegistrationsButton = document.getElementById('selectRegistrations');
+      var selectPollsButton = document.getElementById('select_polls');
+      var updateStudentsButton = document.getElementById('update_students');
+      var studentsFolderSpan = document.getElementById('studentsFolder');
+      var registrationsFileSpan = document.getElementById('registrationsFile');
+      var pollsFolderSpan = document.getElementById('polls_file');
+
+      let studentsFolderId = null;
+      let GLOBAL = {
+        studentGroups: null,
+        registration_files: [],
+        poll_files: []
+      };
+      let registrationsFileId = null;
+      let pollsFolderId = null;
+
+      /**
+       *  On load, called to load the auth2 library and API client library.
+       */
+      function handleClientLoad() {
+        gapi.load('client:auth2', initClient);
+      }
+
+      /**
+       *  Initializes the API client library and sets up sign-in state
+       *  listeners.
+       */
+      function initClient() {
+        gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: DISCOVERY_DOCS,
+          scope: SCOPES
+        }).then(function (response) {
+          // Listen for sign-in state changes.
+          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+
+          // Handle the initial sign-in state.
+          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          authorizeButton.onclick = handleAuthClick;
+          signoutButton.onclick = handleSignoutClick;
+          updateStudentsButton.onclick = handleUpdateStudents;
+
+          selectStudentGroupsButton.onclick = handleSelectStudentGroups;
+          selectRegistrationsButton.onclick = handleSelectRegistrations;
+          selectPollsButton.onclick = handleSelectPolls;
+
+          // load picker
+          gapi.load('picker');
+        }, function(error) {
+          appendPre(JSON.stringify(error, null, 2));
+        });
+      }
+
+      /**
+       *  Called when the signed in status changes, to update the UI
+       *  appropriately. After a sign-in, the API is called.
+       */
+      function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+          authorizeButton.style.display = 'none';
+          signoutButton.style.display = 'block';
+          //listFiles();
+        } else {
+          authorizeButton.style.display = 'block';
+          signoutButton.style.display = 'none';
+        }
+      }
+
+      /**
+       *  Sign in the user upon button click.
+       */
+      function handleAuthClick(event) {
+        gapi.auth2.getAuthInstance().signIn();
+      }
+
+      /**
+       *  Sign out the user upon button click.
+       */
+      function handleSignoutClick(event) {
+        gapi.auth2.getAuthInstance().signOut();
+      }
+
+      function handleSelectStudentGroups() {
+        let docsView = new google.picker.DocsView();
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(true);
+
+        let picker = new google.picker.PickerBuilder()
+          .addView(docsView)
+          .setOAuthToken(gapi.auth.getToken().access_token)
+          .setDeveloperKey(API_KEY)
+          .setCallback(data => {
+            console.log(data);
+            if (data.action == "picked") {
+              /*
+              if (studentsFolderSpan.childNodes.length)
+                studentsFolderSpan.removeChild(studentsFolderSpan.childNodes[0]);
+              studentsFolderSpan.appendChild(new Text(data.docs[0].name));
+              */
+              studentsFolderId = data.docs[0].id;
+              getStudentGroups(studentsFolderId)
+              .then(result => {
+                GLOBAL.studentGroups = result;
+                GLOBAL.students = result.reduce((acc, group) => {
+                  return acc.concat(group.students);
+                },[]);
+              })
+              .catch(error => {
+                if(error.result.error.code == 400) {
+                  addError(`Failed to parse ${data.docs[0].name}`);
+                }
+              });
+            }
+          })
+          .build();
+        picker.setVisible(true);
+      }
+
+      function handleSelectRegistrations() {
+        let docsView = new google.picker.DocsView();
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(true);
+
+        let picker = new google.picker.PickerBuilder()
+          .addView(docsView)
+          .setOAuthToken(gapi.auth.getToken().access_token)
+          .setDeveloperKey(API_KEY)
+          .setCallback(data => {
+            console.log(data);
+            if (data.action == "picked") {
+              updateStudentsButton.disabled = true;
+              /*
+              registrationsFileSpan.appendChild(new Text(data.docs[0].name));
+              */
+              registrationsFileId = data.docs[0].id;
+              listFilesInFolder(registrationsFileId)
+              .then(response => {
+                GLOBAL.registration_files = response.result.files.filter(file => file.mimeType == 'application/vnd.google-apps.spreadsheet')
+                updateStudentsButton.disabled = false;
+              });
+            }
+          })
+          .build();
+        picker.setVisible(true);
+      }
+
+      function handleSelectPolls() {
+        console.log('click')
+        let docsView = new google.picker.DocsView();
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(true);
+
+        let picker = new google.picker.PickerBuilder()
+          .addView(docsView)
+          .setOAuthToken(gapi.auth.getToken().access_token)
+          .setDeveloperKey(API_KEY)
+          .setCallback(data => {
+            console.log(data);
+            if (data.action == "picked") {
+              updateStudentsButton.disabled = true;
+              /*
+              pollsFolderSpan.appendChild(new Text(data.docs[0].name));
+              */
+              pollsFolderId = data.docs[0].id;
+              listFilesInFolder(pollsFolderId)
+              .then(response => {
+                GLOBAL.poll_files = response.result.files.filter(file => file.mimeType == 'application/vnd.google-apps.spreadsheet')
+                updateStudentsButton.disabled = false;
+              });
+            }
+          })
+          .build();
+        picker.setVisible(true);
+      }
+
+      function getRegistrationFilesCopy() {
+        let files = [];
+        for (index in GLOBAL.registration_files) {
+          let file = {};
+          for (key in GLOBAL.registration_files[index]) {
+            file[key] = GLOBAL.registration_files[index][key];
+          }
+          files.push(file);
+        }
+        return files;
+      }
+
+      function getPollFilesCopy() {
+        let files = [];
+        for (index in GLOBAL.poll_files) {
+          let file = {};
+          for (key in GLOBAL.poll_files[index]) {
+            file[key] = GLOBAL.poll_files[index][key];
+          }
+          files.push(file);
+        }
+        return files;
+      }
+
+      function handleUpdateStudents() {
+        if(GLOBAL.registration_files.length > 0 || GLOBAL.poll_files.length > 0) {
+          let status_el = document.getElementById('update_status');
+          status_el.innerHTML = "Updating students... This may take a few minutes.";
+          updateStudentsButton.disabled = true;
+          newUpdateStudents(getRegistrationFilesCopy(), getPollFilesCopy());
+        }
+      }
+
+
+      function onPickerLoad() {
+        let docsView = new google.picker.DocsView();
+        docsView.setIncludeFolders(true);
+        docsView.setSelectFolderEnabled(true);
+
+        let picker = new google.picker.PickerBuilder()
+          .addView(docsView)
+          .setOAuthToken(gapi.auth.getToken().access_token)
+          .setDeveloperKey(API_KEY)
+          .setCallback(pickerCallback)
+          .build();
+        picker.setVisible(true);
+      }
+
+      function pickerCallback(data) {
+        if (data.action == "picked") {
+          updateStudents(data.docs[0].id)
+            .then(students => {
+              console.log(students);
+            });
+        }
+      }
+
+      /**
+       * Append a pre element to the body containing the given message
+       * as its text node. Used to display the results of the API call.
+       *
+       * @param {string} message Text to be placed in pre element.
+       */
+      function appendPre(message) {
+        var pre = document.getElementById('content');
+        var textContent = document.createTextNode(message + '\n');
+        pre.appendChild(textContent);
+      }
+
+      function listFilesInFolder(folderId, callback) {
+        return gapi.client.drive.files.list({
+          'pageSize': 1000,
+          'q': `'${folderId}' in parents` ,
+          'fields': 'nextPageToken, files(id, name, mimeType)'
+        });
+        /* Search second level of folders
+        return gapi.client.drive.files.list({
+          'pageSize': 1000,
+          'q': `'${folderId}' in parents and mimeType='application/vnd.google-apps.folder'`,
+          'fields': 'nextPageToken, files(id, name)'
+        }).then(response => {
+          let q_request = '';
+          let folders = response.result.files;
+          for (let i = 0; i < response.result.files.length; i++) {
+            let folder = folders[i];
+            if (i == folders.length - 1) {
+              q_request += `'${folder.id}' in parents`;
+              break;
+            }
+            q_request += `'${folder.id}' in parents or `;
+          }
+
+          return gapi.client.drive.files.list({
+            'q': q_request,
+            'fields': 'files(id, name, mimeType)'
+          });
+        });*/
+      }
+
+      /**
+       * Print files.
+       */
+      function listFiles() {
+        listFilesInFolder("1Yust-AYPEqy9WqeaDS6-oVW2VNW8CDKd")
+        .then(function(response) {
+          appendPre('Files:');
+          var files = response.result.files;
+          if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+              var file = files[i];
+              appendPre(file.name + ' ( id: ' + file.id + '; mimetype: ' + file.mimeType + ')');
+            }
+          } else {
+            appendPre('No files found.');
+          }
+        });
+      }
+
+      async function getStudentGroups(folderId) {
+        let groupFiles = (await gapi.client.drive.files.list({
+          'pageSize': 1000,
+          'q': `'${folderId}' in parents and mimeType='application/vnd.google-apps.spreadsheet'`,
+          'fields': 'nextPageToken, files(id, name)'
+        })).result.files;
+
+        let groups = [];
+
+        for (file of groupFiles) {
+          let values = (await gapi.client.sheets.spreadsheets.values.get({
+            'spreadsheetId': file.id,
+            'range': 'B2:D'
+          })).result.values;
+
+          let students = values.map((row, index) => {
+            return {
+              name: row[0],
+              visitpoints: 0,
+              answerpoints: 0,
+              rowNum: index,
+              groupName: file.name,
+              groupId: file.id
+            };
+          });
+
+          let group = {
+            name: file.name,
+            students,
+            spreadsheetId: file.id
+          };
+
+          groups.push(group);
+        }
+
+        return groups;
+      }
+
+      function filterLateRegs(regs) {
+        if (regs.length == 0) return regs;
+
+        let first_entry_date = dayjs(regs[0].date, "DD.MM.YYYY HH:mm:ss").toDate();
+        let hours = first_entry_date.getHours()
+        let minutes = Math.round(first_entry_date.getMinutes() / 10) * 10;
+        if (minutes >= 60) {
+          minutes = 0;
+          hours++;
+        }
+        let lesson_start_date = new Date(first_entry_date.getYear() + 1900,
+                                         first_entry_date.getMonth(),
+                                         first_entry_date.getDate(),
+                                         hours,
+                                         minutes);
+
+        // Filter students that couldn't make it in time
+        return regs.filter(reg => {
+          let date = dayjs(reg.date, "DD.MM.YYYY HH:mm:ss").toDate();
+          let time_diff_in_mins = (date.getTime() - lesson_start_date.getTime()) / (1000*60);
+          return time_diff_in_mins <= 45 ? true : false;
+          //LEGACY: return date.getHours() == 11 && date.getMinutes() < 50;
+        });
+      }
+
+      async function getRegistrationData(spreadsheetId) {
+        let values = (await gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: `${spreadsheetId}`,
+          range: 'A2:C',
+          dateTimeRenderOption: 'SERIAL_NUMBER'
+        })).result.values;
+
+        let registrations = values
+          .map(row => {
+            return { 
+              name: row[1] ? row[1].trim() : "", // 2nd row should typically be a name
+              date: row[0],
+              spreadsheetId,
+            };
+          });
+
+        return registrations;
+      }
+
+      async function getPollData(spreadsheetId) {
+        let request = gapi.client.sheets.spreadsheets.values.batchGet({
+          spreadsheetId,
+          ranges: ['B2:B', 'E2:E'],
+          majorDimension: 'COLUMNS'
+        });
+
+        let response = await request;
+        let names = response.result.valueRanges[0].values[0];
+        let answerpoints = response.result.valueRanges[1].values[0];
+        let poll_data = names.map((name, i) => (
+          {
+            name: name.trim(),
+            answerpoints: parseFloat(answerpoints[i]),
+            spreadsheetId
+          }
+        ));
+        return poll_data;
+      }
+
+      const updatedEvent = new Event('update_complete');
+      document.addEventListener('update_complete', event => {
+        updateStudentsButton.disabled = false;
+        let status_el = document.getElementById('update_status');
+        status_el.innerHTML = "";
+        console.log(GLOBAL.students);
+        GLOBAL.studentGroups.forEach((group) => {
+          let rows = group.students.map(student => {
+            return {
+              values: [
+                { userEnteredValue: {numberValue: student.visitpoints} },
+                { userEnteredValue: {numberValue: student.answerpoints} }
+              ]
+            }
+          });
+          let request = gapi.client.sheets.spreadsheets.batchUpdate(
+            { spreadsheetId: group.spreadsheetId },
+            {
+              requests: [{
+                updateCells: {
+                  rows: rows,
+                  fields: "userEnteredValue/numberValue",
+                  start: {
+                    sheetId: 0, 
+                    rowIndex: 1,
+                    columnIndex: 2
+                  }
+                }
+              }]
+            }
+          );
+          request.then(response => {
+            console.log("Points for students have been assigned");
+            console.log("Creating journals...");
+          })
+        });
+
+        createJournal(GLOBAL.registration_files).then(journal => {
+          console.log(journal);
+          fillJournal(journal);
+        });
+      });
+
+      function getStudentNames() {
+        return GLOBAL.studentGroups.reduce((acc, group) => {
+          return acc.concat(group.students.map(student => student.name))
+        },[]);
+      }
+
+      function getStudents() {
+        return GLOBAL.studentGroups.reduce((acc, group) => {
+          return acc.concat(group.students);
+        },[]);
+      }
+
+      function newUpdateStudents(registration_files, poll_files) {
+        function iterFiles() {
+          let reg_file = registration_files.pop();
+          let poll_file = poll_files.pop();
+          if (!reg_file && !poll_file) {
+            document.dispatchEvent(updatedEvent);
+            return;
+          }
+          let promises = [];
+          if (reg_file)
+            promises.push(getRegistrationData(reg_file.id));
+          else 
+            promises.push(Promise.resolve([]));
+
+          if (poll_file)
+            promises.push(getPollData(poll_file.id));
+          else 
+            promises.push(Promise.resolve([]));
+
+          Promise.all(promises)
+          .then(([regs, polls]) => {
+            console.log(regs);
+            console.log(polls);
+            // report all discrepancies
+            let student_names = getStudentNames();
+            for (reg of regs) {
+              if (!student_names.includes(reg.name)) {
+                addError(`Unrecognized student name: <a href="https://docs.google.com/spreadsheets/d/${reg.spreadsheetId}/edit#gid=1645568116" target=_blank>${reg.name}</a>`);
+              }
+            }
+
+            for (poll of polls) {
+              if (!student_names.includes(poll.name)) {
+                addError(`Unrecognized student name: <a href="https://docs.google.com/spreadsheets/d/${poll.spreadsheetId}/edit#gid=1645568116" target=_blank>${poll.name}</a>`);
+              }
+            }
+
+            // Assign points for visits and answers
+            for (student of getStudents()) {
+              for (reg of filterLateRegs(regs)) {
+                if (student.name == reg.name) {
+                  student.visitpoints++;
+                }
+              }
+              for (poll of polls) {
+                if (student.name == poll.name) {
+                  student.answerpoints += poll.answerpoints;
+                }
+              }
+            }
+            iterFiles();
+          })
+          .catch(error => {
+            if (error.status == 429) {
+              registration_files.push(reg_file);
+              poll_files.push(poll_file);
+              console.log("halt")
+              setTimeout(iterFiles, 1000 * 100)
+            } else {
+              throw error;
+            }
+          });
+        }
+        iterFiles();
+      }
+
+      function updateStudents(registration_files) {
+        function iterFiles() {
+          let file = registration_files.pop();
+          console.log(file);
+          if (!file) {
+            document.dispatchEvent(updatedEvent);
+            return;
+          }
+          getRegistrationData(file.id)
+          .then(new_registrations => {
+            for (registration of new_registrations) {
+              for (student of GLOBAL.students) {
+                if (student.name == registration) {
+                  student.visitpoints++;
+                }
+              }
+            }
+            iterFiles();
+          })
+          .catch(error => {
+            console.log(error);
+            if (error.status == 429) {
+              registration_files.push(file);
+              console.log(file);
+              console.log(registration_files);
+              console.log(GLOBAL.students);
+              console.log("Halt");
+              setTimeout(iterFiles, 1000 * 100);
+            }
+          });
+        }
+        iterFiles();
+      }
+
+      function addError(message) {
+        let elem = document.createElement('li');
+        elem.innerHTML = message;
+        let error_list = document.getElementById('error_list');
+        error_list.appendChild(elem);
+      }
+
+      function markLate(regs) {
+        let first_entry_date = dayjs(regs[0].date, "DD.MM.YYYY HH:mm:ss").toDate();
+        let hours = first_entry_date.getHours()
+        let minutes = Math.round(first_entry_date.getMinutes() / 10) * 10;
+        if (minutes >= 60) {
+          minutes = 0;
+          hours++;
+        }
+        let lesson_start_date = new Date(first_entry_date.getYear() + 1900,
+                                         first_entry_date.getMonth(),
+                                         first_entry_date.getDate(),
+                                         hours,
+                                         minutes);
+
+        return regs.map(reg => {
+          let date = dayjs(reg.date, "DD.MM.YYYY HH:mm:ss").toDate();
+          let time_diff_in_mins = (date.getTime() - lesson_start_date.getTime()) / (1000*60);
+          if (time_diff_in_mins <= 45) {
+              reg.late = false;
+          } else {
+              reg.late = true;
+          }
+          return reg;
+        });
+      }
+
+      async function createJournal(registration_files) {
+        let journal = {};
+
+        let all_regs = [];
+        for (reg_file of registration_files) {
+          let reg_data = await getRegistrationData(reg_file.id);
+          reg_data = markLate(reg_data);
+          all_regs.push(reg_data);
+        }
+
+        all_regs = all_regs.reduce((acc, regs) => {
+          return acc.concat(regs);
+        },[]);
+
+        // Categorize registration entries by group
+        for (entry of all_regs) {
+          for (student of GLOBAL.students) {
+            if (entry.name.trim() == student.name.trim()) {
+              if (journal[student.groupId] == undefined)
+                journal[student.groupId] = [];
+              journal[student.groupId].push({date: entry.date, late: entry.late, student: student});
+            }
+          }
+        }
+
+        // Categorize by date
+        for (groupId in journal) {
+          let group_entries = journal[groupId];
+          let byDate = [];
+
+          for (entry of group_entries) {
+            let inserted = false
+            let lecture_date = entry.date.split(' ')[0];
+            for (time_slot of byDate) {
+              if (time_slot.lecture_date == lecture_date) {
+                time_slot.entries.push({late: entry.late, student: entry.student});
+                inserted = true
+              }
+            }
+            if (!inserted) {
+              byDate.push({lecture_date: lecture_date, entries: [{late: entry.late, student: entry.student}]});
+            }
+          }
+
+          journal[groupId] = byDate;
+        }
+
+        // Sort by date
+        for (groupId in journal) {
+          let byDate = journal[groupId];
+          byDate.sort((a,b) => compareDates(a.lecture_date, b.lecture_date));
+        }
+
+        console.log(journal)
+        return journal
+      }
+
+      function parseDate(date) {
+        let delim = '/';
+        if (date.indexOf('/') != -1) {
+          delim = '/';
+        } else if (date.indexOf('.') != -1) {
+            delim = '.';
+        }
+        let [day, month, year] = date.split(delim);
+        return {day: parseInt(day), month: parseInt(month), year: parseInt(year)};
+      }
+
+      function compareDates(a, b) {
+        let { day: a_day, month: a_month, year: a_year } = parseDate(a);
+        let { day: b_day, month: b_month, year: b_year } = parseDate(b);
+
+        if (a_year > b_year)
+          return 1;
+        if (b_year > a_year)
+          return -1;
+
+        if (a_month > b_month)
+          return 1;
+        if (b_month > a_month)
+          return -1;
+
+        if (a_day > b_day)
+          return 1;
+        if (b_day > a_day)
+          return -1;
+
+        return 0;
+      }
+
+      function fillJournal(journal) {
+        for (groupJournalId in journal) {
+          let groupJournal = journal[groupJournalId];
+
+          // Create grid for journal
+          let rowsNum = GLOBAL.studentGroups.find(group => group.spreadsheetId == groupJournalId).students.length + 1;
+          let colsNum = groupJournal.length;
+          let grid = [];
+          for (let i=0; i < rowsNum; i++) {
+            grid.push([]);
+            for (let j=0; j < colsNum; j++) {
+              grid[i].push("н");
+            }
+          }
+
+          // Fill first row with dates
+          for (byDate_i in groupJournal) {
+            grid[0][byDate_i] = groupJournal[byDate_i].lecture_date;
+          }
+
+          // Change state of the remaining cells if a student was registered
+          for (byDate_i in groupJournal) {
+            for (entry of groupJournal[byDate_i].entries) {
+              if (!entry.late) {
+                grid[entry.student.rowNum+1][byDate_i] = "+";
+              } else {
+                grid[entry.student.rowNum+1][byDate_i] = "~";
+              }
+            }
+          }
+
+          // Generate rows for API request
+          let rows = [];
+          for (let row_i = 0; row_i < rowsNum; row_i++) {
+            let row = {
+              values: grid[row_i].map(cell => {
+                return { userEnteredValue: { stringValue: cell.toString() } };
+              })
+            };
+            rows.push(row);
+          }
+
+          let request = gapi.client.sheets.spreadsheets.batchUpdate(
+            { spreadsheetId: groupJournalId},
+            {
+              requests: [{
+                updateCells: {
+                  rows: rows,
+                  fields: "userEnteredValue/numberValue",
+                  start: {
+                    sheetId: 0, // TODO:  eto govno zahardkozheno
+                    rowIndex: 0,
+                    columnIndex: 4
+                  }
+                }
+              }]
+            }
+          );
+          request.then(response => {
+            console.log("Journal has been filled");
+            console.log(response);
+          });
+        }
+      }
+      /*
+      async function updateStudents(students, registration_files) {
+        async function update() {
+          if (registration_files.length == 0 || registration_files === null) {
+            return students;
+          }
+
+          let current_file = registration_files.pop();
+          try {
+            let new_registrations = await getRegistrationData(current_file.id);
+            for (registration of new_registrations) {
+              for (student of students) {
+                if (student.name == registration) {
+                  student.visitpoints++;
+                }
+              }
+            }
+            update(students, files);
+          } catch (error) {
+            if(error.code = 429) {
+              console.log("Holding for a bit");
+              registration_files.push(current_file);
+              setTimeout(update, 1000 * 100);
+            } else {
+              throw error;
+            }
+          }
+        }
+        students = await update();
+        console.log(students);
+        return students;
+        /* OLD
+        // TODO: use async
+        for (file of registration_files) {
+          try {
+            let new_registrations = await getRegistrationData(file.id);
+            for (registration of new_registrations) {
+              for (student of students) {
+                if (student.name == registration) {
+                  student.visitpoints++;
+                }
+              }
+            }
+          } catch (error) {
+            if(error.code == 429) {
+              setTimeout(updateStudents, 300);
+            }
+            console.log(error);
+          }
+        }
+
+        return students;
+        
+      }*/
+
+    </script>
+
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+  </body>
+  <!-- <style>
+        * {
+          box-sizing: border-box;
+        }
+        body {
+          margin: 0;
+          background: #eaedf1;
+          font-family: 'Lato', sans-serif;
+          text-align: center;
+        }
+        pre {
+          width: 100%;
+          padding: 30px;
+          background-color: #D3D3D3;
+          color: #000000;
+          border-radius: 0 0 4px 4px;
+          margin-top: 20px;
+          white-space: pre-wrap; /* css-3 */
+          white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+          white-space: -pre-wrap; /* Opera 4-6 */
+          white-space: -o-pre-wrap; /* Opera 7 */
+          word-wrap: break-word; /* Internet Explorer 5.5+ */
+        }
+        .btn-gradient {
+          margin: 5px;
+        }
+        /* button[class*="btn"] {border: 0;} */
+
+        /* Gradient buttons */
+        .btn-gradient {
+          text-decoration: none;
+          color: white;
+          padding: 10px 30px;
+          display: inline-block;
+          position: relative;
+          border: 1px solid rgba(0,0,0,0.21);
+          border-bottom: 4px solid rgba(0,0,0,0.21);
+          border-radius: 4px;
+          text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+        }
+        /* Gradient - ugly css is ugly */
+        .btn-gradient.red{ 
+          background: rgba(250,90,90,1);
+          background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(250,90,90,1)), to(rgba(232,81,81,1)));
+          background: -webkit-linear-gradient(rgba(250,90,90,1) 0%, rgba(232,81,81,1) 100%);
+          background: -moz-linear-gradient(rgba(250,90,90,1) 0%, rgba(232,81,81,1) 100%);
+          background: -o-linear-gradient(rgba(250,90,90,1) 0%, rgba(232,81,81,1) 100%);
+          background: linear-gradient(rgba(250,90,90,1) 0%, rgba(232,81,81,1) 100%);
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fa5a5a', endColorstr='#e85151', GradientType=0 );
+        }
+        .btn-gradient.yellow {
+          background: rgba(240,210,100,1);
+          background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(240,210,100,1)), to(rgba(229,201,96,1)));
+          background: -webkit-linear-gradient(rgba(240,210,100,1) 0%, rgba(229,201,96,1) 100%);
+          background: -moz-linear-gradient(rgba(240,210,100,1) 0%, rgba(229,201,96,1) 100%);
+          background: -o-linear-gradient(rgba(240,210,100,1) 0%, rgba(229,201,96,1) 100%);
+          background: linear-gradient(rgba(240,210,100,1) 0%, rgba(229,201,96,1) 100%);
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f0d264', endColorstr='#e5c960', GradientType=0 );
+        }
+        .btn-gradient.green {
+          background: rgba(130,200,160,1);
+          background: -moz-linear-gradient(top, rgba(130,200,160,1) 0%, rgba(130,199,158,1) 100%);
+          background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(130,200,160,1)), color-stop(100%, rgba(130,199,158,1)));
+          background: -webkit-linear-gradient(top, rgba(130,200,160,1) 0%, rgba(130,199,158,1) 100%);
+          background: -o-linear-gradient(top, rgba(130,200,160,1) 0%, rgba(130,199,158,1) 100%);
+          background: -ms-linear-gradient(top, rgba(130,200,160,1) 0%, rgba(130,199,158,1) 100%);
+          background: linear-gradient(to bottom, rgba(130,200,160,1) 0%, rgba(124, 185, 149, 1) 100%);
+          filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#82c8a0', endColorstr='#82c79e', GradientType=0 );
+        }
+
+        .btn-gradient.red:active 	  {background: #E35252;}
+        .btn-gradient.orange:active {background: #E8601B;}
+        .btn-gradient.cyan:active 	{background: #169499;}
+        .btn-gradient.blue:active 	{background: #608FBF;}
+        .btn-gradient.purple:active {background: #BD8EB7;}
+        .btn-gradient.yellow:active {background: #DBC05B;}
+        .btn-gradient.green:active  {background: #72B08E;}
+      </style> -->
+</html>
